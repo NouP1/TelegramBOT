@@ -4,19 +4,19 @@ require('dotenv').config();
 const UserModel = require('./models.js')
 const token = process.env.TOKEN;
 const sequelize = require('./db.js')
-const chalk = require('chalk')
+
 
 const bot = new TelegramApi(token, { polling: true })
 const { getRandomCard } = require('./getRandomCard.js');
 const { sendInvoice, handlePreCheckoutQuery, handleSuccessfulPayment } = require('./payments.js');
-const { where } = require('sequelize');
+
 
 const start = async () => {
 
     try {
         await sequelize.authenticate();
         await sequelize.sync();
-        console.log(chalk.magenta('Connected to database...'))
+        console.log('Connected to database...')
 
     } catch (error) {
         console.error(chalk.red('Отсутствует подключение к БД'), error);
@@ -441,7 +441,7 @@ const start = async () => {
             console.error(error);
         }
     });
-    console.log(chalk.cyan('Bot is running...'));
+    console.log('Bot is running...');
 
 }
 start()

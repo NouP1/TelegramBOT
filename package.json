@@ -5,7 +5,7 @@
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "nodemon index.js"
+    "start": "node index.js"
   },
   "author": "",
   "license": "ISC",
@@ -17,12 +17,11 @@
     "dotenv": "^16.4.5",
     "express": "^4.19.2",
     "mysql": "^2.18.1",
-    "node-telegram-bot-api": "^0.66.0",
-    "nodemon": "^3.1.0"
+    "node-telegram-bot-api": "^0.66.0"
+ 
   },
   "dependencies": {
     "better-sqlite3": "^11.0.0",
-    "chalk": "^4.1.2",
     "openai": "^4.47.1",
     "sequelize": "^6.37.3",
     "sqlite3": "^5.1.7"
