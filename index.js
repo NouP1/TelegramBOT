@@ -347,7 +347,7 @@ const start = async () => {
                     });  
                     await new Promise(resolve => setTimeout(resolve, 1000));
 
-                    await bot.editMessageText("Поредставь того о ком хочешь знать .... ", {
+                    await bot.editMessageText("Представь того о ком хочешь знать .... ", {
                         chat_id: chatId,
                         message_id: messageId
                     });  
