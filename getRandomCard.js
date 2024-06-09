@@ -1,7 +1,7 @@
 const fs = require('fs');
 const { randomInt } = require('crypto');
 const path = require("path");
-const predictions = JSON.parse(fs.readFileSync(path.resolve(__dirname,'./predictions.json')));
+//onst predictions = JSON.parse(fs.readFileSync(path.resolve(__dirname,'./predictions.json')));
 
 const getRandomCard = (category) => {
     const cardNumber = randomInt(1, 32); // случайное число от 1 до 78 включительно
