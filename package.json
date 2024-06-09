@@ -21,8 +21,6 @@
  
   },
   "dependencies": {
-    "better-sqlite3": "^11.0.0",
-    "openai": "^4.47.1",
     "sequelize": "^6.37.3",
     "sqlite3": "^5.1.7"
   }
