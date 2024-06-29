@@ -24,7 +24,7 @@ const start = async () => {
 
     bot.setMyCommands([
         { command: '/start', description: "Запустить бота заново" },
-        // { command: '/pay', description: "Записаться на консультацию" },
+      
     ]);
 
     const userStates = {};
