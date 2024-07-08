@@ -36,30 +36,16 @@ const start = async () => {
             const firstName = msg.chat.first_name;
             const chatId = msg.chat.id;
             const messageId = msg.message_id;
-            const userId = msg.from.id;
-            const currentTime = Date.now();
-            const oneDay = 24 * 60 * 60 * 1000;
-
+            
             if (text === '/pay') {
 
                 await sendInvoice(bot, chatId);
             }
 
-            // const user = await UserModel.findOne({ where: { chatId: chatId } })
-            // if (text != '/start' && text != '/pay' && user.invoiceMessageId) {
-            //     var result = text.replace(/[\.\/_*[\]()~`>#+\-=|{}!\\]/g, '\\$&');
-            //     await bot.sendMessage(chatId, "Пользователь [" + username + " " + firstName + "](t.me://user?id=" + userId + ")" + " *оплатил счет*\n" + "\n Сообщение пользователя:\n_" + result + "_", { parse_mode: 'MarkdownV2' })
-            //     await bot.sendMessage(chatId, "Отлично, в указанное время с Вами свяжется наш специалист! ")
-            //     await user.update({ invoiceMessageId: 0 })
-            //     await user.save()
-            // }
-            // console.log(msg);
 
             if (text === '/start') {
-                const user = await UserModel.findOrCreate({ where: { chatId: chatId }, defaults: { chatId: chatId, firstName: firstName, username: username } })
-                console.log(user)
+                const user = await UserModel.findOrCreate({ where: { chatId: chatId }, defaults: { chatId: chatId, firstName: firstName, username: username }})
                 const table = await UserModel.findAll()
-                console.log(table)
                 let pass = await bot.getChatMember("@tkkd13", msg.from.id);
                 if(pass.status==='left'){
                      await bot.sendMessage(chatId, "Чтобы получить ответ нужно" +" *подписаться* "+ "на мой канал",{parse_mode:'MarkdownV2',reply_markup:menu.reply_markup});
@@ -70,30 +56,39 @@ const start = async () => {
                    
                 }
                 
-            
-
-
-
-
-                // // Проверка времени последнего запроса               
-                // else if ((currentTime - user.lastRequest) < oneDay) {
-
-                //     const lastRequestTime = user.lastRequest;
-
-                //     const timeLeft = oneDay - (currentTime - lastRequestTime);
-                //     const hoursLeft = Math.floor(timeLeft / (60 * 60 * 1000));
-                //     const minutesLeft = Math.floor((timeLeft % (60 * 60 * 1000)) / (60 * 1000));
-                //     const secondsLeft = Math.floor((timeLeft % (60 * 1000)) / 1000);
-
-                //     await bot.sendMessage(chatId, `Вы уже получили расклад сегодня. Пожалуйста, попробуйте снова завтра через ${hoursLeft} часов ${minutesLeft} минут ${secondsLeft} секунд.`, consult);
-                // }
-                // else {
-                //     await bot.sendMessage(chatId, "Добро пожаловать в бот Карта дня, чтобы получить ответ нужно подписаться на канал", menu);
-                // }
             }
+            const user = await UserModel.findOne({ where: { chatId: chatId } });
+
+            if(user.consultMessageId=1 && text!='/start'){
+
+                const dateRegex = /^(0?[1-9]|[12][0-9]|3[01])\.(0?[1-9]|1[012])\.(19|20)\d\d$/;
+                if (dateRegex.test(text)) {
+                    // Разбиваем строку на компоненты
+                    const [day, month, year] = text.split('.').map(Number);
+            
+                    // Суммируем цифры
+                    let sum = [...(day.toString() + month.toString() + year.toString())].reduce((acc, digit) => acc + parseInt(digit), 0);
+            
+                    // Преобразуем в число судьбы
+                    while (sum > 9) {
+                        sum = sum.toString().split('').reduce((acc, digit) => acc + parseInt(digit), 0);
+                    }
+            
+                    // Отправляем результат пользователю
+                    bot.sendMessage(chatId, `Ваше число судьбы ${sum}!\n Узнать подробнее -->`,paidConsult);
+            
+                    // Сбрасываем consultMessageId
+                    user.consultMessageId = 0;
+                    await user.save();
+                } else {
+                    // Если формат даты неверный, отправляем сообщение об ошибке
+                    bot.sendMessage(chatId, 'Пожалуйста, введите дату рождения в формате ДД.ММ.ГГГГ (например, 11.02.1986).');
+                }
+            }
+
         } catch (error) {
             console.log(error)
-        } // await bot.deleteMessage(chatId, messageId);
+        } 
     });
 
 
@@ -133,20 +128,6 @@ const start = async () => {
                         reply_markup: menu.reply_markup
                     });
 
-
-                    // await bot.deleteMessage(chatId, messageId);
-                    // } else {
-                    //     const user = await UserModel.findOne({ where:{chatId:chatId } })
-
-                    // if (user.lastRequest && (currentTime - user.lastRequest) < oneDay) {
-
-                    //     await bot.editMessageText("Вы уже получили расклад сегодня. Пожалуйста, попробуйте снова завтра.", {
-                    //         chat_id: chatId,
-                    //         message_id: messageId,
-                    //         reply_markup: consult.reply_markup
-                    //     })
-
-                    // } 
                 }
                 else {
                     await bot.editMessageText("📂 Выберите категорию ", {
@@ -158,7 +139,7 @@ const start = async () => {
 
             }
 
-            const categories = ['category1', 'category2', 'category2', 'category3','category4'];
+            const categories = ['category1', 'category2', 'category2', 'category3'];
             if (categories.includes(data)) {
                 if (!userStates[userId]) {
                     userStates[userId] = {};
@@ -166,26 +147,19 @@ const start = async () => {
 
                 userStates[userId] = { category: data };
 
-                await bot.editMessageText("Перетасовываю колоду...", {
-                    chat_id: chatId,
-                    message_id: messageId
-                });
+                await bot.sendMessage(chatId,"Перетасовываю колоду...")
+                
 
                 await bot.sendChatAction(chatId, "typing")
                 await new Promise(resolve => setTimeout(resolve, 1000));
-                await bot.editMessageText("Выбери одну карту из колоды 👇", {
-                    chat_id: chatId,
-                    message_id: messageId,
-                    reply_markup: getTaro.reply_markup
-                });
+                await bot.sendMessage(chatId,"Выбери одну карту из колоды 👇",getTaro);
             }
 
 
             if (data === "/" && userStates[userId] && userStates[userId].category === "category1") {
 
                 const user = await UserModel.findOne({ where: { chatId: chatId } })
-                // user.lastRequest = currentTime;
-                //     await user.update({lastRequest});
+              
 
                 if (user.lastRequestCardDay && (currentTime - user.lastRequestCardDay) < oneDay) {
                     const timeLeft = oneDay - (currentTime - user.lastRequestCardDay);
@@ -193,7 +167,6 @@ const start = async () => {
                     const minutesLeft = Math.floor((timeLeft % (60 * 60 * 1000)) / (60 * 1000));
                     const secondsLeft = Math.floor((timeLeft % (60 * 1000)) / 1000);
 
-                   // await bot.sendMessage(chatId, `Осталось времени${hoursLeft} часов ${minutesLeft} минут ${secondsLeft} секунд`)
                     await bot.editMessageText("⏳ Вы уже получили карту сегодняшнего дня. Пожалуйста, попробуйте снова завтра. \n" + `\nОсталось времени ${hoursLeft} часа ${minutesLeft} минут ${secondsLeft} секунд\n` , {
                         chat_id: chatId,
                         message_id: messageId,
@@ -203,10 +176,7 @@ const start = async () => {
                     
                 } else {
 
-                    await bot.editMessageText("Достаю карту из колоды...", {
-                        chat_id: chatId,
-                        message_id: messageId
-                    });
+                    await bot.sendMessage(chatId,"Достаю карту из колоды...");
                     await bot.sendChatAction(chatId, "upload_photo");
                     await new Promise(resolve => setTimeout(resolve, 1000));
 
@@ -230,10 +200,7 @@ const start = async () => {
 
                 if (user.quantityAnswersYoN < 2 && (currentTime - user.lastRequestYoN) > oneDay) {
                     console.log(user.quantityAnswersYoN + "--------------------------------------------------------") 
-                    await bot.editMessageText("Достаю карту из колоды...", {
-                        chat_id: chatId,
-                        message_id: messageId
-                    });
+                    await bot.sendMessage(chatId,"Достаю карту из колоды...");
                     await bot.sendChatAction(chatId, "upload_photo");
                     await new Promise(resolve => setTimeout(resolve, 1000));
 
@@ -260,10 +227,7 @@ const start = async () => {
                 }
                 
                 if (user.quantityAnswersYoN === 2 && (currentTime - user.lastRequestYoN) > oneDay) {
-                    await bot.editMessageText("Достаю карту из колоды...", {
-                        chat_id: chatId,
-                        message_id: messageId
-                    });
+                    await bot.sendMessage(chatId,"Достаю карту из колоды...");
                     await bot.sendChatAction(chatId, "upload_photo");
                     await new Promise(resolve => setTimeout(resolve, 1000));
 
@@ -291,70 +255,25 @@ const start = async () => {
                 }
             }
 
-            // if (data === 'needConsult') {
-            //     await bot.editMessageText("💫Для того чтобы получить личную консультацию у специалиста🧝‍♀️💬 и ответ на свой вопрос, необходимо оплатить 60 р", {
-            //         chat_id: chatId,
-            //         message_id: messageId,
-            //         reply_markup: back.reply_markup
-            //     });
-            //     await sendInvoice(bot, chatId);
-            //     if (!userStates[userId]) {
-            //         userStates[userId] = {};
-            //     }
-            // }
-            // if (data === 'needInfo') {
-            //     await bot.editMessageText("Информация о правилах проведения итп итд...", {
-            //         chat_id: chatId,
-            //         message_id: messageId,
-            //         reply_markup: back.reply_markup
-            //     });
-            // }
-            // if (data === 'back') {
-            //     await bot.editMessageText("Задай вопрос специалисту лично или приходи завтра и гадай снова! 🌙", {
-            //         chat_id: chatId,
-            //         message_id: messageId,
-            //         reply_markup: consult.reply_markup
-            //     });
-            // }
+         
+     
 
             if (data === "/" && userStates[userId] && userStates[userId].category === "category3") {
                 const user = await UserModel.findOne({ where: { chatId: chatId } })
                 await user.update({PaidCategory: userStates[userId].category})
                 await user.save()
 
-            //     await bot.editMessageText("Для того чтобы узнать думает ли он или она о тебе, необходимо внести 60 ₽\n"+"\n*Данная услуга является единоразовой*", {
-            //         chat_id: chatId,
-            //         message_id: messageId,
-            //         parse_mode: 'MarkdownV2'
-            //         // reply_markup: paidConsult.reply_markup
-            //     });
-            //     await sendInvoice(bot, chatId);
-            //  }
-                
-                // if (data === 'PaidButton') { 
-
-                    await bot.editMessageText("Достаю карту из колоды...", {
-                        chat_id: chatId,
-                        message_id: messageId
-                    });  
-                    // const user = await UserModel.findOne({ where: { chatId: chatId } })
+                    await bot.sendMessage(chatId,"Достаю карту из колоды...");  
+    
                     await bot.sendChatAction(chatId, "upload_photo");
                     await new Promise(resolve => setTimeout(resolve, 1000));
 
-                    await bot.editMessageText("Выкладываю 1 карту ", {
-                        chat_id: chatId,
-                        message_id: messageId
-                    });  
+                    await bot.sendMessage(chatId,"Выкладываю 1 карту ");  
                     await new Promise(resolve => setTimeout(resolve, 1000));
 
-                    await bot.editMessageText("Представь того о ком хочешь знать .... ", {
-                        chat_id: chatId,
-                        message_id: messageId
-                    });  
+                    await bot.sendMessage(chatId,"Представь того о ком хочешь знать .... ");  
                     await bot.sendChatAction(chatId, "upload_photo");
                     await new Promise(resolve => setTimeout(resolve, 3000));
-
-                    // if(user.PaidCategory!=0) {
                         
                     const category = user.PaidCategory
                     console.log(category)
@@ -364,52 +283,15 @@ const start = async () => {
                     await user.update({ invoiceMessageId: 0 })
                     await user.update({ PaidCategory: 0 })
                     await user.save();
-                    // }
-
+                  
                    
                 }
 
-
-
-                // if (data === "/" && userStates[userId] && userStates[userId].category === "category4") {
-                //     const user = await UserModel.findOne({ where: { chatId: chatId } })
-                //     await user.update({PaidCategory: userStates[userId].category})
-                //     await user.save()
-    
-                //     await bot.editMessageText("Для того чтобы узнать думает ли он или она о тебе, необходимо пополнить баланс на 60 р, данная услуга является единоразовой", {
-                //         chat_id: chatId,
-                //         message_id: messageId,
-                //         reply_markup: paidConsult.reply_markup
-                //     });
-                //     await sendInvoice(bot, chatId);
-                //  }
-                    
-                //     if (data === 'PaidButton') {
-                //         const user = await UserModel.findOne({ where: { chatId: chatId } })
-                //         if(user.PaidCategory!=0) {
-                            
-                //          await bot.editMessageText("Достаю карту из колоды...", {
-                //             chat_id: chatId,
-                //             message_id: messageId
-                //         });
-
-                //         await bot.sendChatAction(chatId, "upload_photo");
-                //         await new Promise(resolve => setTimeout(resolve, 1000));
-    
-                //      const category = user.PaidCategory
-                //         console.log(category)
-                //         const { cardImage, predictionText } = getRandomCard(category);
-                //         await bot.sendPhoto(chatId, cardImage);
-                //         await bot.sendMessage(chatId, predictionText, consult);
-                //         await user.update({ invoiceMessageId: 0 })
-                //         await user.update({ PaidCategory: 0 })
-                //         await user.save();
-                //         }
-                //     }
-
-
-            if (data === 'pay') {
-                await sendInvoice(bot, chatId);
+            if (data === 'category4') {
+                const user = await UserModel.findOne({ where: { chatId: chatId } })
+                await user.update({consultMessageId: 1})
+                await user.save()
+                await bot.sendMessage(chatId,"Чтобы узнать число судьбы отправь мне дату своего рождения в формате 25.08.1999");  
             }
 
         } catch (error) {

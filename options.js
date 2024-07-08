@@ -11,25 +11,14 @@ module.exports = {
          ]
        })
      },
-     Pay:{
-      reply_markup: JSON.stringify({ 
-        inline_keyboard: [
-          [{text:'Внести 60 ₽', pay:true}],
-          [{text:'📂 Изменить категорию ',callback_data:'GETTARO'}],
-          [{text:'🚶‍♂️Перейти в канал', url:'https://t.me/tkkd13',callback_data:'link'}],
-          
-          
-        ]
-      })
-    },
-
+     
      menuConst:{
       reply_markup: JSON.stringify({ 
           inline_keyboard: [
             [{text:'🌟 Карта дня', callback_data:'category1'}],
             [{text:'⚖ Впорос: да/нет?', callback_data:'category2'}],
             [{text:'💭 Что он/она думает о тебе ',callback_data:'category3'}],   
-            // [{text:'Карьера 📈', callback_data:'category4'}],
+            [{text:'Число судьбы', callback_data:'category4'}],
             [{text:'🚶‍♂️ Перейти в канал', url:'https://t.me/tkkd13',callback_data:'link'}],
         ]
       })
@@ -52,6 +41,7 @@ module.exports = {
             [{text:'🌟 Карта дня', callback_data:'category1'}],
             [{text:'⚖ Впорос: да/нет?', callback_data:'category2'}],
             [{text:'💭 Что он/она думает о тебе 💭',callback_data:'category3'}],
+            [{text:'Число судьбы', callback_data:'category4'}],
             [{text:'🚶‍♂️ Перейти в канал', url:'https://t.me/tkkd13',callback_data:'link'}],
                
             // [{text:'Карьера 📈', callback_data:'category4'}],
